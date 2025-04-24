@@ -1,12 +1,11 @@
 {
     "builds": [
-      { "src": "api/tracker.py", "use": "@vercel/python" }
+      { "src": "api/tracker.py", "use": "@vercel/python" },
+      { "src": "index.html", "use": "@vercel/static" }
     ],
     "routes": [
-      {
-        "src": "/tracker",
-        "dest": "api/tracker.py"
-      }
+      { "src": "/tracker", "dest": "api/tracker.py" },
+      { "src": "/", "dest": "index.html" }
     ]
   }
   

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email Tracker Test</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    #status {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>📡 Email Tracker Test</h1>
+  <p>This tests if the backend is serving the tracking pixel correctly.</p>
+
+  <img 
+    id="tracker-pixel"
+    src="https://email-tracker-14lod1sk9-manan-wadhwas-projects.vercel.app/tracker?id=admin"
+    width="1"
+    height="1"
+    alt="tracking pixel"
+    style="display: none;"
+    onload="document.getElementById('status').textContent = '✅ Pixel loaded from backend'"
+    onerror="document.getElementById('status').textContent = '❌ Pixel failed to load from backend'"
+  />
+
+  <div id="status">⏳ Loading pixel...</div>
+</body>
+</html>
