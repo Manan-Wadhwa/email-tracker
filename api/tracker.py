@@ -1,19 +1,18 @@
 from flask import Flask, request, send_file
-from datetime import datetime
+import os
 
 app = Flask(__name__)
 
 @app.route('/tracker')
 def tracker():
     user_id = request.args.get('id', 'unknown')
-    user_agent = request.headers.get('User-Agent', 'No-UA')
-    ip = request.remote_addr
-    timestamp = datetime.utcnow().isoformat()
+    print(f"[OPENED EMAIL] User ID: {user_id}")
 
-    with open("log.txt", "a") as f:
-        f.write(f"{timestamp} | IP: {ip} | User ID: {user_id} | UA: {user_agent}\n")
+    # Safely resolve pixel.png location
+    image_path = os.path.join(os.path.dirname(__file__), '..', 'pixel.png')
 
-    return send_file("pixel.png", mimetype='image/png')
+    if not os.path.exists(image_path):
+        print(f"[ERROR] Image not found at: {image_path}")
+        return "Image not found", 404
 
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=5000)
+    return send_file(image_path, mimetype='image/png')
