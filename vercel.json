@@ -1,0 +1,12 @@
+{
+    "builds": [
+      { "src": "api/tracker.py", "use": "@vercel/python" }
+    ],
+    "routes": [
+      {
+        "src": "/tracker",
+        "dest": "api/tracker.py"
+      }
+    ]
+  }
+  
