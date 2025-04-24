@@ -15,5 +15,6 @@ module.exports = (req, res) => {
   }
 
   res.setHeader('Content-Type', 'image/png');
+  res.setHeader('Cache-Control', 'no-store'); // Prevent caching of the pixel
   fs.createReadStream(imagePath).pipe(res);
 };
