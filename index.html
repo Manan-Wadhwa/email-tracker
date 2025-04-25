@@ -31,5 +31,28 @@
   />
 
   <div id="status">⏳ Loading pixel...</div>
+
+  <script>
+  async function fetchLogs() {
+    try {
+      const response = await fetch('/log.txt');
+      if (response.ok) {
+        const logs = await response.text();
+        document.getElementById('logs').textContent = logs;
+      } else {
+        document.getElementById('logs').textContent = 'Failed to load logs.';
+      }
+    } catch (error) {
+      document.getElementById('logs').textContent = 'Error fetching logs.';
+    }
+  }
+
+  // Fetch logs on page load
+  window.onload = fetchLogs;
+</script>
+
+<div id="logs" style="white-space: pre-wrap; background: #f4f4f4; padding: 1rem; border: 1px solid #ccc; margin-top: 1rem;">
+  Loading logs...
+</div>
 </body>
 </html>

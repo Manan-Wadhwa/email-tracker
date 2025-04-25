@@ -1,15 +1,27 @@
 const path = require('path');
 const fs = require('fs');
 
+const logFilePath = path.resolve(__dirname, '../log.txt');
+
+function appendLog(message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] ${message}\n`;
+  fs.appendFileSync(logFilePath, logMessage, 'utf8');
+}
+
 module.exports = (req, res) => {
   const userId = req.query.id || 'unknown';
-  console.log(`[OPENED EMAIL] User ID: ${userId}`);
+  const logMessage = `[OPENED EMAIL] User ID: ${userId}`;
+  console.log(logMessage);
+  appendLog(logMessage);
 
   // Get the absolute path of pixel.png
   const imagePath = path.resolve(__dirname, '../pixel.png');
 
   if (!fs.existsSync(imagePath)) {
-    console.error(`[ERROR] Image not found at: ${imagePath}`);
+    const errorMessage = `[ERROR] Image not found at: ${imagePath}`;
+    console.error(errorMessage);
+    appendLog(errorMessage);
     res.status(404).send('Image not found');
     return;
   }
