@@ -132,14 +132,14 @@
     
     <div class="copy-area">
       <h3>Your Tracking URLs</h3>
-      <p>Insert this URL in your emails to track opens:</p>
-      
-      <div class="copy-field">
-        <input id="pixel-url" type="text" readonly>
-        <button class="copy-btn" onclick="copyToClipboard('pixel-url')">Copy</button>
+      <p>Enter your user ID to generate tracking URLs:</p>
+      <div class="copy-field" style="margin-bottom: 20px;">
+        <input id="user-id" type="text" placeholder="Enter your user ID" onchange="updateTrackingUrls()">
       </div>
       
-      <p>Use this HTML code in your email template:</p>
+      <p>Insert this URL in your emails to track opens:</p>
+      <div class="copy-field">
+        <input id="pixel-url" type="text" readonly>
       <div class="copy-field">
         <input id="pixel-html" type="text" readonly>
         <button class="copy-btn" onclick="copyToClipboard('pixel-html')">Copy</button>
