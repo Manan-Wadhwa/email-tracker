@@ -4,7 +4,7 @@
     { "src": "index.html", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/tracker", "dest": "api/tracker.js" },
+    { "src": "/api/tracker", "dest": "api/tracker.js" },
     { "src": "/", "dest": "index.html" }
   ]
 }
