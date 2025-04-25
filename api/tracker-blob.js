@@ -1,28 +1,31 @@
-// tracker.js - Place this in your server directory
-const { kv } = require('@vercel/kv');
-const LOG_KEY = 'email_tracker_logs';
+const { put, list, del } = require('@vercel/blob');
+const LOG_PREFIX = 'email-logs';
 const MAX_LOGS = 1000;
 
-// Log function
 async function appendLog(message) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${message}`;
   
   try {
-    // Get existing logs
-    let logs = await kv.get(LOG_KEY) || [];
+    // Create a unique filename for this log
+    const filename = `${LOG_PREFIX}/${timestamp}-${Math.random().toString(36).substring(7)}.txt`;
     
-    // Add new log at the beginning
-    logs.unshift(logMessage);
-    
-    // Keep only the most recent logs
-    if (logs.length > MAX_LOGS) {
-      logs = logs.slice(0, MAX_LOGS);
+    // Store the log entry as a blob
+    await put(filename, logMessage, {
+      access: 'public',
+      addRandomSuffix: false
+    });
+
+    // List and cleanup old logs if needed
+    const { blobs } = await list({ prefix: LOG_PREFIX });
+    if (blobs.length > MAX_LOGS) {
+      // Sort by creation time and delete oldest entries
+      const sortedBlobs = blobs.sort((a, b) => b.uploadedAt - a.uploadedAt);
+      const toDelete = sortedBlobs.slice(MAX_LOGS);
+      await Promise.all(toDelete.map(blob => del(blob.url)));
     }
-    
-    // Store updated logs
-    await kv.set(LOG_KEY, logs);
-    console.log(logMessage); // Still log to console for debugging
+
+    console.log(logMessage); // Console log for debugging
   } catch (error) {
     console.error('Error storing log:', error);
   }
@@ -32,8 +35,13 @@ async function appendLog(message) {
 module.exports = async (req, res) => {
   if (req.query.getLogs) {
     try {
-      // Return logs if getLogs parameter is present
-      const logs = await kv.get(LOG_KEY) || [];
+      const { blobs } = await list({ prefix: LOG_PREFIX });
+      const sortedBlobs = blobs.sort((a, b) => b.uploadedAt - a.uploadedAt);
+      const logPromises = sortedBlobs.map(async blob => {
+        const response = await fetch(blob.url);
+        return response.text();
+      });
+      const logs = await Promise.all(logPromises);
       return res.json({ logs: logs.join('\n') });
     } catch (error) {
       console.error('Error fetching logs:', error);

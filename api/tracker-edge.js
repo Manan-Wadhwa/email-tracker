@@ -1,16 +1,16 @@
-// tracker.js - Place this in your server directory
-const { kv } = require('@vercel/kv');
+const { createClient } = require('@vercel/edge-config');
+const config = createClient(process.env.EDGE_CONFIG);
 const LOG_KEY = 'email_tracker_logs';
 const MAX_LOGS = 1000;
 
-// Log function
 async function appendLog(message) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] ${message}`;
   
   try {
     // Get existing logs
-    let logs = await kv.get(LOG_KEY) || [];
+    let logs = await config.get(LOG_KEY) || [];
+    if (!Array.isArray(logs)) logs = [];
     
     // Add new log at the beginning
     logs.unshift(logMessage);
@@ -21,8 +21,8 @@ async function appendLog(message) {
     }
     
     // Store updated logs
-    await kv.set(LOG_KEY, logs);
-    console.log(logMessage); // Still log to console for debugging
+    await config.set(LOG_KEY, logs);
+    console.log(logMessage); // Console log for debugging
   } catch (error) {
     console.error('Error storing log:', error);
   }
@@ -32,8 +32,7 @@ async function appendLog(message) {
 module.exports = async (req, res) => {
   if (req.query.getLogs) {
     try {
-      // Return logs if getLogs parameter is present
-      const logs = await kv.get(LOG_KEY) || [];
+      const logs = await config.get(LOG_KEY) || [];
       return res.json({ logs: logs.join('\n') });
     } catch (error) {
       console.error('Error fetching logs:', error);

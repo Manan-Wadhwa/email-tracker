@@ -4,14 +4,17 @@
     "description": "Simple email tracker with external logging",
     "main": "index.js",
     "scripts": {
-      "dev": "next dev",
-      "build": "next build",
-      "start": "next start"
+        "dev": "next dev",
+        "build": "next build",
+        "start": "next start"
     },
     "dependencies": {
-      "next": "^12.0.0",
-      "node-fetch": "^2.6.7",
-      "react": "^17.0.2",
-      "react-dom": "^17.0.2"
+        "@vercel/blob": "^1.0.0",
+        "@vercel/edge-config": "^1.4.0",
+        "@vercel/kv": "^3.0.0",
+        "next": "^12.0.0",
+        "node-fetch": "^2.6.7",
+        "react": "^17.0.2",
+        "react-dom": "^17.0.2"
     }
-  }
+}
