@@ -1,34 +1,64 @@
+// tracker.js - Place this in your server directory
 const path = require('path');
 const fs = require('fs');
 
-// Store logs in memory
-const logArray = [];
+// Create base directory where files will be stored
+const baseDir = process.cwd();
+const logFilePath = path.join(baseDir, 'log.txt');
+
+// Log function
+function appendLog(message) {
+  const timestamp = new Date().toISOString();
+  const logMessage = `[${timestamp}] ${message}\n`;
+  
+  try {
+    fs.appendFileSync(logFilePath, logMessage, 'utf8');
+  } catch (error) {
+    console.error(`Failed to write to log file: ${error.message}`);
+    if (error.code === 'ENOENT') {
+      try {
+        fs.writeFileSync(logFilePath, logMessage, 'utf8');
+        console.log(`Created new log file at ${logFilePath}`);
+      } catch (writeError) {
+        console.error(`Failed to create log file: ${writeError.message}`);
+      }
+    }
+  }
+}
 
 // Main tracking endpoint
 module.exports = (req, res) => {
   if (req.query.getLogs) {
     // Return logs if getLogs parameter is present
-    return res.json(logArray);
+    try {
+      if (fs.existsSync(logFilePath)) {
+        const logData = fs.readFileSync(logFilePath, 'utf8');
+        return res.json({ logs: logData });
+      } else {
+        return res.json({ logs: '' });
+      }
+    } catch (error) {
+      console.error('Error reading logs:', error);
+      return res.status(500).json({ error: 'Failed to read logs' });
+    }
   }
 
   const userId = req.query.id || 'unknown';
-  const timestamp = new Date().toISOString();
-  const logEntry = { userId, timestamp };
+  const userAgent = req.headers['user-agent'] || 'unknown';
+  const logMessage = `[OPENED EMAIL] User ID: ${userId} | User-Agent: ${userAgent}`;
   
-  // Add log to array
-  logArray.push(logEntry);
-  console.log(`[OPENED EMAIL] User ID: ${userId}`);
+  console.log(logMessage);
+  appendLog(logMessage);
 
-  // Get the absolute path of pixel.png
-  const imagePath = path.resolve(__dirname, '../pixel.png');
-
-  if (!fs.existsSync(imagePath)) {
-    console.error(`[ERROR] Image not found at: ${imagePath}`);
-    res.status(404).send('Image not found');
-    return;
-  }
-
-  res.setHeader('Content-Type', 'image/png');
-  res.setHeader('Cache-Control', 'no-store'); // Prevent caching of the pixel
-  fs.createReadStream(imagePath).pipe(res);
+  // Generate a 1x1 transparent pixel
+  const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+  
+  res.writeHead(200, {
+    'Content-Type': 'image/png',
+    'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  });
+  
+  res.end(transparentPixel);
 };
