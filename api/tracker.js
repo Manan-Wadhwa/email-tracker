@@ -1,25 +1,20 @@
 const path = require('path');
 const fs = require('fs');
-const { kv } = require('@vercel/kv');
+const { createClient } = require('@supabase/supabase-js');
 
-const LOG_KEY = 'email_tracker_logs';
-const MAX_LOGS = 1000;
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-async function saveLogToVercel(message) {
-  const timestamp = new Date().toISOString();
-  const logMessage = `[${timestamp}] ${message}`;
+async function saveLogToSupabase(message) {
+  const { data, error } = await supabase
+    .from('email_logs')
+    .insert([{ message }]);
 
-  try {
-    let logs = await kv.get(LOG_KEY) || [];
-    logs.unshift(logMessage);
-
-    if (logs.length > MAX_LOGS) {
-      logs = logs.slice(0, MAX_LOGS);
-    }
-
-    await kv.set(LOG_KEY, logs);
-  } catch (error) {
-    console.error('Error saving log to Vercel KV:', error);
+  if (error) {
+    console.error('Error saving log to Supabase:', error);
+  } else {
+    console.log('Log saved to Supabase:', data);
   }
 }
 
@@ -27,7 +22,7 @@ module.exports = async (req, res) => {
   const userId = req.query.id || 'unknown';
   const logMessage = `[OPENED EMAIL] User ID: ${userId}`;
   console.log(logMessage);
-  await saveLogToVercel(logMessage);
+  await saveLogToSupabase(logMessage);
 
   // Get the absolute path of pixel.png
   const imagePath = path.resolve(__dirname, '../pixel.png');
@@ -35,7 +30,7 @@ module.exports = async (req, res) => {
   if (!fs.existsSync(imagePath)) {
     const errorMessage = `[ERROR] Image not found at: ${imagePath}`;
     console.error(errorMessage);
-    await saveLogToVercel(errorMessage);
+    await saveLogToSupabase(errorMessage);
     res.status(404).send('Image not found');
     return;
   }
